@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         cityList.setAdapter(cityAdapter);
 
         //onClickListener for add
-        addButton.setOnClickListener(v -> promptForCity());
+        addButton.setOnClickListener(v -> promptForAdd());
 
         //onItemClickListener for tracking selected city
         cityList.setOnItemClickListener((parent, view, position, id) -> {
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void promptForCity() {
+    private void promptForAdd() {
         final EditText input = new EditText(this);
         AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Add City").setView(input)
                 .setPositiveButton("OK", (dialog1, which) -> {
