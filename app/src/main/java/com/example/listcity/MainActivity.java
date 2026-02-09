@@ -1,82 +1,54 @@
 package com.example.listcity;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 
-public class MainActivity extends AppCompatActivity {
-    ListView cityList;
-    ArrayAdapter<String> cityAdapter;
-    ArrayList<String> dataList;
-    Button addButton, deleteButton;
-    String cityClicked = null;
+public class MainActivity extends AppCompatActivity implements AddCityFragment.AddCityDialogListener {
+    private ArrayList<City> dataList;
+    private ListView cityList;
+    private CityArrayAdapter cityAdapter;
+
+    @Override
+    public void addCity(City city) {
+        cityAdapter.add(city);
+        cityAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void editCity(City city) {
+        cityAdapter.notifyDataSetChanged();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        cityList = findViewById(R.id.city_list);
-        addButton = findViewById(R.id.add_button);
-        deleteButton = findViewById(R.id.delete_button);
+        String[] cities = { "Edmonton", "Vancouver", "Toronto" };
+        String[] provinces = { "AB", "BC", "ON" };
+        dataList = new ArrayList<>();
+        for (int i = 0; i < cities.length; i++) {
+            dataList.add(new City(cities[i], provinces[i]));
+        }
 
-        String[] cities = {"Edmonton", "Vancouver", "Moscow", "Sydney", "Berlin", "Vienna", "Tokyo", "Beijing", "Osaka"};
-        dataList = new ArrayList<>(Arrays.asList(cities));
-        cityAdapter = new ArrayAdapter<>(this, R.layout.content, dataList);
+        cityList = findViewById(R.id.city_list);
+        cityAdapter = new CityArrayAdapter(this, dataList);
         cityList.setAdapter(cityAdapter);
 
-        //onClickListener for add
-        addButton.setOnClickListener(v -> promptForAdd());
-
-        //onItemClickListener for tracking selected city
         cityList.setOnItemClickListener((parent, view, position, id) -> {
-            cityClicked = dataList.get(position); //update selectedvar
+            City cityToEdit = dataList.get(position);
+            AddCityFragment editFragment = AddCityFragment.newInstance(cityToEdit);
+            editFragment.show(getSupportFragmentManager(), "Edit City");
         });
 
-        //onClickListener for delete
-        deleteButton.setOnClickListener(v -> deleteSelectedCity());
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-    }
-
-    private void promptForAdd() {
-        final EditText input = new EditText(this);
-        AlertDialog dialog = new AlertDialog.Builder(this).setTitle("Add City").setView(input)
-                .setPositiveButton("OK", (dialog1, which) -> {
-                    String cityName = input.getText().toString();
-                    if (!cityName.isEmpty()) {
-                        dataList.add(cityName);
-                        cityAdapter.notifyDataSetChanged();
-                    }
-                })
-                .setNegativeButton("Cancel", (dialog12, which) -> dialog12.cancel())
-                .create();
-        dialog.show();
-    }
-
-    private void deleteSelectedCity() {
-        if (cityClicked != null) {
-            dataList.remove(cityClicked);
-            cityAdapter.notifyDataSetChanged(); // Update the list
-            cityClicked = null;
-        }
+        FloatingActionButton fab = findViewById(R.id.button_add_city);
+        fab.setOnClickListener(v -> new AddCityFragment().show(getSupportFragmentManager(), "Add City"));
     }
 }
